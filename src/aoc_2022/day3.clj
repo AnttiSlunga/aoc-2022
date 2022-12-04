@@ -35,7 +35,7 @@
                           (if (str/includes? t (str %))
                             (get (points) %))))
                   (remove nil?)
-                  ;distinct
+                  distinct
                   )))
          flatten
          (apply +))))
