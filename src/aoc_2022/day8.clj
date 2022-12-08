@@ -17,8 +17,8 @@
    [3 5 3 9 0]])
 
 (def input
-  #_(input-from-file)
-  test-input)
+  (input-from-file)
+  #_test-input)
 
 (def last-row
   (dec (count input)))
@@ -47,7 +47,16 @@
 (defn count-trees [trees]
   (if (empty? trees)
     0
-    (let [_ (println "[" trees "]")
+    (loop [trees trees
+           count 0]
+      (if (or (empty? trees) (>= (first trees) 2))
+        (if (empty? trees)
+          count
+          (inc count))
+        (recur (rest trees)
+               (inc count))))
+
+    #_(let [_ (println "[" trees "]")
           ind (.indexOf trees 2)]
       (if (= (first trees) 0)
         1
@@ -61,27 +70,26 @@
              (cond
                (< (nth (nth input rowc) column) tree) 1
                (= (nth (nth input rowc) column) tree) 2
-               (> (nth (nth input rowc) column) tree) 0))
+               (> (nth (nth input rowc) column) tree) 3))
         up (count-trees up)
         down (for [rowc (range (inc row) (inc last-row))]
                (cond
                  (< (nth (nth input rowc) column) tree) 1
                  (= (nth (nth input rowc) column) tree) 2
-                 (> (nth (nth input rowc) column) tree) 0))
+                 (> (nth (nth input rowc) column) tree) 3))
         down (count-trees down)
         left (for [columnn (reverse (range column))]
                (cond
                  (< (nth (nth input row) columnn) tree) 1
                  (= (nth (nth input row) columnn) tree) 2
-                 (> (nth (nth input row) columnn) tree) 0))
+                 (> (nth (nth input row) columnn) tree) 3))
         left (count-trees left)
         right (for [columnn (range (inc column) (inc last-column))]
                 (cond
                   (< (nth (nth input row) columnn) tree) 1
                   (= (nth (nth input row) columnn) tree) 2
-                  (> (nth (nth input row) columnn) tree) 0))
-        right (count-trees right)
-        _ (println up down left right)]
+                  (> (nth (nth input row) columnn) tree) 3))
+        right (count-trees right)]
     (* up down left right)))
 
 (defn part1 []
@@ -105,6 +113,6 @@
                         (map-indexed
                           (fn [column tree]
                             (scenic-score row column tree)) v)))
-                    (mapv #(into [] %))
+                    flatten
                     (into []))]
-    scores))
+    (apply max scores)))                                    ;=> 392080
