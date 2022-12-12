@@ -35,7 +35,7 @@
 (def test-monkeys
   [{:id 0
     :items [79 98]
-    :operation (fn [x] (* (bigint x) 19))
+    :operation (fn [x] (* x 19))
     :test (fn [x] (if (= 0 (mod x 23)) 2 3))
     :inspects 0}
    {:id 1
@@ -45,7 +45,7 @@
     :inspects 0}
    {:id 2
     :items [79 60 97]
-    :operation (fn [x] (* (bigint x) (bigint x)))
+    :operation (fn [x] (* x x))
     :test (fn [x] (if (= 0 (mod x 13)) 1 3))
     :inspects 0}
    {:id 3
@@ -57,48 +57,52 @@
 (def monkeys
   [{:id 0
     :items [59 65 86 56 74 57 56]
-    :operation (fn [x] (* (bigint x) 17))
-    :test (fn [x] (if (= 0 (mod (bigint x) 3)) 3 6))
+    :operation (fn [x] (* x 17))
+    :test (fn [x] (if (= 0 (mod x 3)) 3 6))
     :inspects 0}
    {:id 1
     :items [63 83 50 63 56]
-    :operation (fn [x] (+ (bigint x) 2))
-    :test (fn [x] (if (= 0 (mod (bigint x) 13)) 3 0))
+    :operation (fn [x] (+ x 2))
+    :test (fn [x] (if (= 0 (mod x 13)) 3 0))
     :inspects 0}
    {:id 2
     :items [93 79 74 55]
-    :operation (fn [x] (+ (bigint x) 1))
-    :test (fn [x] (if (= 0 (mod (bigint x) 2)) 0 1))
+    :operation (fn [x] (+ x 1))
+    :test (fn [x] (if (= 0 (mod x 2)) 0 1))
     :inspects 0}
    {:id 3
     :items [86 61 67 88 94 69 56 91]
-    :operation (fn [x] (+ (bigint x) 7))
-    :test (fn [x] (if (= 0 (mod (bigint x) 11)) 6 7))
+    :operation (fn [x] (+ x 7))
+    :test (fn [x] (if (= 0 (mod x 11)) 6 7))
     :inspects 0}
    {:id 4
     :items [76 50 51]
-    :operation (fn [x] (* (bigint x) (bigint x)))
-    :test (fn [x] (if (= 0 (mod (bigint x) 19)) 2 5))
+    :operation (fn [x] (* x x))
+    :test (fn [x] (if (= 0 (mod x 19)) 2 5))
     :inspects 0}
    {:id 5
     :items [77 76]
-    :operation (fn [x] (+ (bigint x) 8))
-    :test (fn [x] (if (= 0 (mod (bigint x) 17)) 2 1))
+    :operation (fn [x] (+ x 8))
+    :test (fn [x] (if (= 0 (mod x 17)) 2 1))
     :inspects 0}
    {:id 6
     :items [74]
-    :operation (fn [x] (* (bigint x) 2))
-    :test (fn [x] (if (= 0 (mod (bigint x) 5)) 4 7))
+    :operation (fn [x] (* x 2))
+    :test (fn [x] (if (= 0 (mod x 5)) 4 7))
     :inspects 0}
    {:id 7
     :items [86 85 52 86 91 95]
-    :operation (fn [x] (+ (bigint x) 6))
-    :test (fn [x] (if (= 0 (mod (bigint x) 7)) 4 5))
+    :operation (fn [x] (+ x 6))
+    :test (fn [x] (if (= 0 (mod x 7)) 4 5))
     :inspects 0}])
 
+(def modulo-for-test-monkeys
+  (* 23 19 13 17))
 
+(def modulo-for-monkeys
+  (* 3 13 2 11 19 17 5 7))
 
-(defn round [monkeys]
+(defn round [monkeys modulo]
   (loop [monkeys monkeys
          new-monkeys []]
     (if (empty? monkeys)
@@ -115,8 +119,7 @@
               (recur
                 (rest items)
                 (let [mod-current-monkey (first (filter #(= (:id current-monkey) (:id %)) mod-monkeys))
-                      worry-level ((:operation current-monkey) (first items))
-                      ;_ (println "worry " worry-level)
+                      worry-level (mod ((:operation current-monkey) (first items)) modulo)
                       throw-to ((:test current-monkey) worry-level)
                       target-monkey (first (filter #(= throw-to (:id %)) mod-monkeys))
                       target-monkey (update target-monkey :items #(conj % worry-level))
@@ -137,7 +140,7 @@
       monkeys
       (recur
         (dec rounds)
-        (round monkeys)))))
+        (round monkeys modulo-for-monkeys)))))
 
 (defn part2 []
   (mapv #(select-keys % [:id :inspects])
@@ -147,4 +150,4 @@
            monkeys
            (recur
              (dec rounds)
-             (round monkeys))))))
+             (round monkeys modulo-for-monkeys))))))
